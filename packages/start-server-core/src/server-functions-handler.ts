@@ -1,7 +1,7 @@
-import { isNotFound } from '@tanstack/router-core'
+import { isNotFound, isRedirect } from '@tanstack/router-core'
 import invariant from 'tiny-invariant'
 import { startSerializer } from '@tanstack/start-client-core'
-import { getEvent, getResponseStatus } from './h3'
+import { getEvent, getResponseStatus, setCookie, getCookie, deleteCookie } from './h3'
 import { VIRTUAL_MODULES } from './virtual-modules'
 import { loadVirtualModule } from './loadVirtualModule'
 
@@ -39,6 +39,14 @@ export const handleServerAction = async ({ request }: { request: Request }) => {
 
   const isCreateServerFn = 'createServerFn' in search
   const isRaw = 'raw' in search
+  
+  // Check if this is a non-JS form submission
+  const referer = request.headers.get('referer')
+  const acceptHeader = request.headers.get('accept')
+  const isFormSubmission = method === 'POST' && 
+    referer && 
+    (!acceptHeader || acceptHeader.includes('text/html')) &&
+    !request.headers.get('x-requested-with') // No AJAX header
 
   if (typeof serverFnId !== 'string') {
     throw new Error('Invalid server action param for serverFnId: ' + serverFnId)
@@ -216,6 +224,22 @@ export const handleServerAction = async ({ request }: { request: Request }) => {
       if (isNotFound(error)) {
         return isNotFoundResponse(error)
       }
+      
+      // Handle redirect errors
+      if (isRedirect(error)) {
+        // For redirects thrown as errors, return them as a redirect response
+        // Since Redirect extends Response, it has headers property
+        const headers = new Headers(error.headers)
+        const location = headers.get('Location') || error.options?.href || '/'
+        
+        return new Response(null, {
+          status: error.status || 307,
+          headers: {
+            'Location': location,
+            ...Object.fromEntries(headers.entries()),
+          },
+        })
+      }
 
       console.info()
       console.info('Server Fn Error!')
@@ -233,6 +257,58 @@ export const handleServerAction = async ({ request }: { request: Request }) => {
   })()
 
   request.signal.removeEventListener('abort', abort)
+
+  // Handle progressive enhancement for form submissions
+  if (isFormSubmission && referer) {
+    // Check if the response is a redirect
+    if (response.status >= 300 && response.status < 400 && response.headers.get('location')) {
+      // If it's already a redirect, just return it
+      return response
+    }
+
+    // Generate a unique flash key
+    const flashKey = `flash_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
+    // Extract the result from the response
+    let flashData: { data?: any; error?: any } = {}
+    
+    if (response.ok) {
+      const contentType = response.headers.get('content-type')
+      if (contentType?.includes('application/json')) {
+        try {
+          flashData.data = await response.json()
+        } catch {
+          flashData.data = null
+        }
+      }
+    } else {
+      // Handle error responses
+      try {
+        flashData.error = await response.json()
+      } catch {
+        flashData.error = { message: 'Server error', status: response.status }
+      }
+    }
+    
+    // Store the result in a cookie
+    setCookie(`__tsr_flash_${flashKey}`, startSerializer.stringify(flashData), {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60, // 60 seconds should be enough for redirect
+    })
+    
+    // Redirect back to the referer with the flash key
+    const refererUrl = new URL(referer)
+    refererUrl.searchParams.set('__tsr_flash', flashKey)
+    
+    return new Response(null, {
+      status: 303, // See Other - proper status for POST redirect
+      headers: {
+        'Location': refererUrl.toString(),
+      },
+    })
+  }
 
   if (isRaw) {
     return response

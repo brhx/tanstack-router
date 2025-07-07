@@ -46,6 +46,7 @@ export function attachRouterServerSsrUtils(
   router.serverSsr = {
     injectedHtml: [],
     streamedKeys: new Set(),
+    flashData: {} as Record<string, any>,
     injectHtml: (getHtml) => {
       const promise = Promise.resolve().then(getHtml)
       router.serverSsr!.injectedHtml.push(promise)
@@ -113,6 +114,21 @@ export function dehydrateRouter(router: AnyRouter) {
         },
       )}`,
   )
+  
+  // Inject flash data if present
+  if (Object.keys(router.serverSsr!.flashData).length > 0) {
+    router.serverSsr!.injectScript(
+      () =>
+        `window.__TSR_FLASH_DATA__ = ${jsesc(
+          router.serverSsr!.flashData,
+          {
+            isScriptContext: true,
+            wrap: true,
+            json: true,
+          },
+        )}`
+    )
+  }
 }
 
 export function extractAsyncLoaderData(

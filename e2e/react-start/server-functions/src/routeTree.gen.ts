@@ -14,6 +14,9 @@ import { Route as StatusRouteImport } from './routes/status'
 import { Route as SerializeFormDataRouteImport } from './routes/serialize-form-data'
 import { Route as ReturnNullRouteImport } from './routes/return-null'
 import { Route as RawResponseRouteImport } from './routes/raw-response'
+import { Route as ProgressiveEnhancementTestRouteImport } from './routes/progressive-enhancement-test'
+import { Route as ProgressiveEnhancementRedirectTestRouteImport } from './routes/progressive-enhancement-redirect-test'
+import { Route as ProgressiveEnhancementMultipleRouteImport } from './routes/progressive-enhancement-multiple'
 import { Route as MultipartRouteImport } from './routes/multipart'
 import { Route as IsomorphicFnsRouteImport } from './routes/isomorphic-fns'
 import { Route as HeadersRouteImport } from './routes/headers'
@@ -24,6 +27,7 @@ import { Route as AbortSignalRouteImport } from './routes/abort-signal'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FormdataRedirectIndexRouteImport } from './routes/formdata-redirect/index'
 import { Route as CookiesIndexRouteImport } from './routes/cookies/index'
+import { Route as RedirectTargetNameRouteImport } from './routes/redirect-target/$name'
 import { Route as CookiesSetRouteImport } from './routes/cookies/set'
 import { Route as FormdataRedirectTargetNameRouteImport } from './routes/formdata-redirect/target.$name'
 
@@ -52,6 +56,24 @@ const RawResponseRoute = RawResponseRouteImport.update({
   path: '/raw-response',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProgressiveEnhancementTestRoute =
+  ProgressiveEnhancementTestRouteImport.update({
+    id: '/progressive-enhancement-test',
+    path: '/progressive-enhancement-test',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ProgressiveEnhancementRedirectTestRoute =
+  ProgressiveEnhancementRedirectTestRouteImport.update({
+    id: '/progressive-enhancement-redirect-test',
+    path: '/progressive-enhancement-redirect-test',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ProgressiveEnhancementMultipleRoute =
+  ProgressiveEnhancementMultipleRouteImport.update({
+    id: '/progressive-enhancement-multiple',
+    path: '/progressive-enhancement-multiple',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const MultipartRoute = MultipartRouteImport.update({
   id: '/multipart',
   path: '/multipart',
@@ -102,6 +124,11 @@ const CookiesIndexRoute = CookiesIndexRouteImport.update({
   path: '/cookies/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RedirectTargetNameRoute = RedirectTargetNameRouteImport.update({
+  id: '/redirect-target/$name',
+  path: '/redirect-target/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CookiesSetRoute = CookiesSetRouteImport.update({
   id: '/cookies/set',
   path: '/cookies/set',
@@ -123,12 +150,16 @@ export interface FileRoutesByFullPath {
   '/headers': typeof HeadersRoute
   '/isomorphic-fns': typeof IsomorphicFnsRoute
   '/multipart': typeof MultipartRoute
+  '/progressive-enhancement-multiple': typeof ProgressiveEnhancementMultipleRoute
+  '/progressive-enhancement-redirect-test': typeof ProgressiveEnhancementRedirectTestRoute
+  '/progressive-enhancement-test': typeof ProgressiveEnhancementTestRoute
   '/raw-response': typeof RawResponseRoute
   '/return-null': typeof ReturnNullRoute
   '/serialize-form-data': typeof SerializeFormDataRoute
   '/status': typeof StatusRoute
   '/submit-post-formdata': typeof SubmitPostFormdataRoute
   '/cookies/set': typeof CookiesSetRoute
+  '/redirect-target/$name': typeof RedirectTargetNameRoute
   '/cookies': typeof CookiesIndexRoute
   '/formdata-redirect': typeof FormdataRedirectIndexRoute
   '/formdata-redirect/target/$name': typeof FormdataRedirectTargetNameRoute
@@ -142,12 +173,16 @@ export interface FileRoutesByTo {
   '/headers': typeof HeadersRoute
   '/isomorphic-fns': typeof IsomorphicFnsRoute
   '/multipart': typeof MultipartRoute
+  '/progressive-enhancement-multiple': typeof ProgressiveEnhancementMultipleRoute
+  '/progressive-enhancement-redirect-test': typeof ProgressiveEnhancementRedirectTestRoute
+  '/progressive-enhancement-test': typeof ProgressiveEnhancementTestRoute
   '/raw-response': typeof RawResponseRoute
   '/return-null': typeof ReturnNullRoute
   '/serialize-form-data': typeof SerializeFormDataRoute
   '/status': typeof StatusRoute
   '/submit-post-formdata': typeof SubmitPostFormdataRoute
   '/cookies/set': typeof CookiesSetRoute
+  '/redirect-target/$name': typeof RedirectTargetNameRoute
   '/cookies': typeof CookiesIndexRoute
   '/formdata-redirect': typeof FormdataRedirectIndexRoute
   '/formdata-redirect/target/$name': typeof FormdataRedirectTargetNameRoute
@@ -162,12 +197,16 @@ export interface FileRoutesById {
   '/headers': typeof HeadersRoute
   '/isomorphic-fns': typeof IsomorphicFnsRoute
   '/multipart': typeof MultipartRoute
+  '/progressive-enhancement-multiple': typeof ProgressiveEnhancementMultipleRoute
+  '/progressive-enhancement-redirect-test': typeof ProgressiveEnhancementRedirectTestRoute
+  '/progressive-enhancement-test': typeof ProgressiveEnhancementTestRoute
   '/raw-response': typeof RawResponseRoute
   '/return-null': typeof ReturnNullRoute
   '/serialize-form-data': typeof SerializeFormDataRoute
   '/status': typeof StatusRoute
   '/submit-post-formdata': typeof SubmitPostFormdataRoute
   '/cookies/set': typeof CookiesSetRoute
+  '/redirect-target/$name': typeof RedirectTargetNameRoute
   '/cookies/': typeof CookiesIndexRoute
   '/formdata-redirect/': typeof FormdataRedirectIndexRoute
   '/formdata-redirect/target/$name': typeof FormdataRedirectTargetNameRoute
@@ -183,12 +222,16 @@ export interface FileRouteTypes {
     | '/headers'
     | '/isomorphic-fns'
     | '/multipart'
+    | '/progressive-enhancement-multiple'
+    | '/progressive-enhancement-redirect-test'
+    | '/progressive-enhancement-test'
     | '/raw-response'
     | '/return-null'
     | '/serialize-form-data'
     | '/status'
     | '/submit-post-formdata'
     | '/cookies/set'
+    | '/redirect-target/$name'
     | '/cookies'
     | '/formdata-redirect'
     | '/formdata-redirect/target/$name'
@@ -202,12 +245,16 @@ export interface FileRouteTypes {
     | '/headers'
     | '/isomorphic-fns'
     | '/multipart'
+    | '/progressive-enhancement-multiple'
+    | '/progressive-enhancement-redirect-test'
+    | '/progressive-enhancement-test'
     | '/raw-response'
     | '/return-null'
     | '/serialize-form-data'
     | '/status'
     | '/submit-post-formdata'
     | '/cookies/set'
+    | '/redirect-target/$name'
     | '/cookies'
     | '/formdata-redirect'
     | '/formdata-redirect/target/$name'
@@ -221,12 +268,16 @@ export interface FileRouteTypes {
     | '/headers'
     | '/isomorphic-fns'
     | '/multipart'
+    | '/progressive-enhancement-multiple'
+    | '/progressive-enhancement-redirect-test'
+    | '/progressive-enhancement-test'
     | '/raw-response'
     | '/return-null'
     | '/serialize-form-data'
     | '/status'
     | '/submit-post-formdata'
     | '/cookies/set'
+    | '/redirect-target/$name'
     | '/cookies/'
     | '/formdata-redirect/'
     | '/formdata-redirect/target/$name'
@@ -241,12 +292,16 @@ export interface RootRouteChildren {
   HeadersRoute: typeof HeadersRoute
   IsomorphicFnsRoute: typeof IsomorphicFnsRoute
   MultipartRoute: typeof MultipartRoute
+  ProgressiveEnhancementMultipleRoute: typeof ProgressiveEnhancementMultipleRoute
+  ProgressiveEnhancementRedirectTestRoute: typeof ProgressiveEnhancementRedirectTestRoute
+  ProgressiveEnhancementTestRoute: typeof ProgressiveEnhancementTestRoute
   RawResponseRoute: typeof RawResponseRoute
   ReturnNullRoute: typeof ReturnNullRoute
   SerializeFormDataRoute: typeof SerializeFormDataRoute
   StatusRoute: typeof StatusRoute
   SubmitPostFormdataRoute: typeof SubmitPostFormdataRoute
   CookiesSetRoute: typeof CookiesSetRoute
+  RedirectTargetNameRoute: typeof RedirectTargetNameRoute
   CookiesIndexRoute: typeof CookiesIndexRoute
   FormdataRedirectIndexRoute: typeof FormdataRedirectIndexRoute
   FormdataRedirectTargetNameRoute: typeof FormdataRedirectTargetNameRoute
@@ -287,6 +342,27 @@ declare module '@tanstack/react-router' {
       path: '/raw-response'
       fullPath: '/raw-response'
       preLoaderRoute: typeof RawResponseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/progressive-enhancement-test': {
+      id: '/progressive-enhancement-test'
+      path: '/progressive-enhancement-test'
+      fullPath: '/progressive-enhancement-test'
+      preLoaderRoute: typeof ProgressiveEnhancementTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/progressive-enhancement-redirect-test': {
+      id: '/progressive-enhancement-redirect-test'
+      path: '/progressive-enhancement-redirect-test'
+      fullPath: '/progressive-enhancement-redirect-test'
+      preLoaderRoute: typeof ProgressiveEnhancementRedirectTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/progressive-enhancement-multiple': {
+      id: '/progressive-enhancement-multiple'
+      path: '/progressive-enhancement-multiple'
+      fullPath: '/progressive-enhancement-multiple'
+      preLoaderRoute: typeof ProgressiveEnhancementMultipleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/multipart': {
@@ -359,6 +435,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CookiesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/redirect-target/$name': {
+      id: '/redirect-target/$name'
+      path: '/redirect-target/$name'
+      fullPath: '/redirect-target/$name'
+      preLoaderRoute: typeof RedirectTargetNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cookies/set': {
       id: '/cookies/set'
       path: '/cookies/set'
@@ -385,12 +468,17 @@ const rootRouteChildren: RootRouteChildren = {
   HeadersRoute: HeadersRoute,
   IsomorphicFnsRoute: IsomorphicFnsRoute,
   MultipartRoute: MultipartRoute,
+  ProgressiveEnhancementMultipleRoute: ProgressiveEnhancementMultipleRoute,
+  ProgressiveEnhancementRedirectTestRoute:
+    ProgressiveEnhancementRedirectTestRoute,
+  ProgressiveEnhancementTestRoute: ProgressiveEnhancementTestRoute,
   RawResponseRoute: RawResponseRoute,
   ReturnNullRoute: ReturnNullRoute,
   SerializeFormDataRoute: SerializeFormDataRoute,
   StatusRoute: StatusRoute,
   SubmitPostFormdataRoute: SubmitPostFormdataRoute,
   CookiesSetRoute: CookiesSetRoute,
+  RedirectTargetNameRoute: RedirectTargetNameRoute,
   CookiesIndexRoute: CookiesIndexRoute,
   FormdataRedirectIndexRoute: FormdataRedirectIndexRoute,
   FormdataRedirectTargetNameRoute: FormdataRedirectTargetNameRoute,
