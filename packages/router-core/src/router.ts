@@ -657,6 +657,15 @@ export type ClearCacheFn<TRouter extends AnyRouter> = (opts?: {
   filter?: (d: MakeRouteMatchUnion<TRouter>) => boolean
 }) => void
 
+// Flash data structure for progressive enhancement
+// This pattern differs from core TanStack Router error handling (which uses throws)
+// but is necessary for non-JS form submissions where we need to distinguish
+// success/error states through serialized cookie data
+export interface FlashData<TData = any, TError = any> {
+  data?: TData
+  error?: TError
+}
+
 export interface ServerSrr {
   injectedHtml: Array<InjectedHtmlEntry>
   injectHtml: (getHtml: () => string | Promise<string>) => Promise<void>
@@ -667,7 +676,7 @@ export interface ServerSrr {
   streamValue: (key: string, value: any) => void
   streamedKeys: Set<string>
   onMatchSettled: (opts: { router: AnyRouter; match: AnyRouteMatch }) => any
-  flashData: Record<string, any>
+  flashData: FlashData | null
 }
 
 export type AnyRouterWithContext<TContext> = RouterCore<
@@ -3061,18 +3070,7 @@ export class RouterCore<
     serializer: TsrSerializer
   }
 
-  serverSsr?: {
-    injectedHtml: Array<InjectedHtmlEntry>
-    injectHtml: (getHtml: () => string | Promise<string>) => Promise<void>
-    injectScript: (
-      getScript: () => string | Promise<string>,
-      opts?: { logScript?: boolean },
-    ) => Promise<void>
-    streamValue: (key: string, value: any) => void
-    streamedKeys: Set<string>
-    onMatchSettled: (opts: { router: AnyRouter; match: AnyRouteMatch }) => any
-    flashData: Record<string, any>
-  }
+  serverSsr?: ServerSrr
 
   clientSsr?: {
     getStreamedValue: <T>(key: string) => T | undefined

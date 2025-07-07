@@ -46,7 +46,7 @@ export function attachRouterServerSsrUtils(
   router.serverSsr = {
     injectedHtml: [],
     streamedKeys: new Set(),
-    flashData: {} as Record<string, any>,
+    flashData: null,
     injectHtml: (getHtml) => {
       const promise = Promise.resolve().then(getHtml)
       router.serverSsr!.injectedHtml.push(promise)
@@ -90,7 +90,7 @@ ${jsesc(script, { quotes: 'backtick' })}\`)`
     onMatchSettled,
   }
 
-  router.serverSsr.injectScript(() => minifiedTsrBootStrapScript, {
+  router.serverSsr!.injectScript(() => minifiedTsrBootStrapScript, {
     logScript: false,
   })
 }
@@ -116,7 +116,7 @@ export function dehydrateRouter(router: AnyRouter) {
   )
   
   // Inject flash data if present
-  if (router.serverSsr!.flashData && Object.keys(router.serverSsr!.flashData).length > 0) {
+  if (router.serverSsr!.flashData) {
     router.serverSsr!.injectScript(
       () =>
         `window.__TSR_FLASH_DATA__ = ${jsesc(

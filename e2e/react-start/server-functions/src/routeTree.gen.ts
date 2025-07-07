@@ -15,6 +15,7 @@ import { Route as SerializeFormDataRouteImport } from './routes/serialize-form-d
 import { Route as ReturnNullRouteImport } from './routes/return-null'
 import { Route as RawResponseRouteImport } from './routes/raw-response'
 import { Route as ProgressiveEnhancementTestRouteImport } from './routes/progressive-enhancement-test'
+import { Route as ProgressiveEnhancementSerializationTestRouteImport } from './routes/progressive-enhancement-serialization-test'
 import { Route as ProgressiveEnhancementRedirectTestRouteImport } from './routes/progressive-enhancement-redirect-test'
 import { Route as ProgressiveEnhancementMultipleRouteImport } from './routes/progressive-enhancement-multiple'
 import { Route as MultipartRouteImport } from './routes/multipart'
@@ -60,6 +61,12 @@ const ProgressiveEnhancementTestRoute =
   ProgressiveEnhancementTestRouteImport.update({
     id: '/progressive-enhancement-test',
     path: '/progressive-enhancement-test',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ProgressiveEnhancementSerializationTestRoute =
+  ProgressiveEnhancementSerializationTestRouteImport.update({
+    id: '/progressive-enhancement-serialization-test',
+    path: '/progressive-enhancement-serialization-test',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ProgressiveEnhancementRedirectTestRoute =
@@ -152,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/multipart': typeof MultipartRoute
   '/progressive-enhancement-multiple': typeof ProgressiveEnhancementMultipleRoute
   '/progressive-enhancement-redirect-test': typeof ProgressiveEnhancementRedirectTestRoute
+  '/progressive-enhancement-serialization-test': typeof ProgressiveEnhancementSerializationTestRoute
   '/progressive-enhancement-test': typeof ProgressiveEnhancementTestRoute
   '/raw-response': typeof RawResponseRoute
   '/return-null': typeof ReturnNullRoute
@@ -175,6 +183,7 @@ export interface FileRoutesByTo {
   '/multipart': typeof MultipartRoute
   '/progressive-enhancement-multiple': typeof ProgressiveEnhancementMultipleRoute
   '/progressive-enhancement-redirect-test': typeof ProgressiveEnhancementRedirectTestRoute
+  '/progressive-enhancement-serialization-test': typeof ProgressiveEnhancementSerializationTestRoute
   '/progressive-enhancement-test': typeof ProgressiveEnhancementTestRoute
   '/raw-response': typeof RawResponseRoute
   '/return-null': typeof ReturnNullRoute
@@ -199,6 +208,7 @@ export interface FileRoutesById {
   '/multipart': typeof MultipartRoute
   '/progressive-enhancement-multiple': typeof ProgressiveEnhancementMultipleRoute
   '/progressive-enhancement-redirect-test': typeof ProgressiveEnhancementRedirectTestRoute
+  '/progressive-enhancement-serialization-test': typeof ProgressiveEnhancementSerializationTestRoute
   '/progressive-enhancement-test': typeof ProgressiveEnhancementTestRoute
   '/raw-response': typeof RawResponseRoute
   '/return-null': typeof ReturnNullRoute
@@ -224,6 +234,7 @@ export interface FileRouteTypes {
     | '/multipart'
     | '/progressive-enhancement-multiple'
     | '/progressive-enhancement-redirect-test'
+    | '/progressive-enhancement-serialization-test'
     | '/progressive-enhancement-test'
     | '/raw-response'
     | '/return-null'
@@ -247,6 +258,7 @@ export interface FileRouteTypes {
     | '/multipart'
     | '/progressive-enhancement-multiple'
     | '/progressive-enhancement-redirect-test'
+    | '/progressive-enhancement-serialization-test'
     | '/progressive-enhancement-test'
     | '/raw-response'
     | '/return-null'
@@ -270,6 +282,7 @@ export interface FileRouteTypes {
     | '/multipart'
     | '/progressive-enhancement-multiple'
     | '/progressive-enhancement-redirect-test'
+    | '/progressive-enhancement-serialization-test'
     | '/progressive-enhancement-test'
     | '/raw-response'
     | '/return-null'
@@ -294,6 +307,7 @@ export interface RootRouteChildren {
   MultipartRoute: typeof MultipartRoute
   ProgressiveEnhancementMultipleRoute: typeof ProgressiveEnhancementMultipleRoute
   ProgressiveEnhancementRedirectTestRoute: typeof ProgressiveEnhancementRedirectTestRoute
+  ProgressiveEnhancementSerializationTestRoute: typeof ProgressiveEnhancementSerializationTestRoute
   ProgressiveEnhancementTestRoute: typeof ProgressiveEnhancementTestRoute
   RawResponseRoute: typeof RawResponseRoute
   ReturnNullRoute: typeof ReturnNullRoute
@@ -349,6 +363,13 @@ declare module '@tanstack/react-router' {
       path: '/progressive-enhancement-test'
       fullPath: '/progressive-enhancement-test'
       preLoaderRoute: typeof ProgressiveEnhancementTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/progressive-enhancement-serialization-test': {
+      id: '/progressive-enhancement-serialization-test'
+      path: '/progressive-enhancement-serialization-test'
+      fullPath: '/progressive-enhancement-serialization-test'
+      preLoaderRoute: typeof ProgressiveEnhancementSerializationTestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/progressive-enhancement-redirect-test': {
@@ -471,6 +492,8 @@ const rootRouteChildren: RootRouteChildren = {
   ProgressiveEnhancementMultipleRoute: ProgressiveEnhancementMultipleRoute,
   ProgressiveEnhancementRedirectTestRoute:
     ProgressiveEnhancementRedirectTestRoute,
+  ProgressiveEnhancementSerializationTestRoute:
+    ProgressiveEnhancementSerializationTestRoute,
   ProgressiveEnhancementTestRoute: ProgressiveEnhancementTestRoute,
   RawResponseRoute: RawResponseRoute,
   ReturnNullRoute: ReturnNullRoute,

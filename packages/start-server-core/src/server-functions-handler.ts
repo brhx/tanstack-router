@@ -267,6 +267,7 @@ export const handleServerAction = async ({ request }: { request: Request }) => {
     }
 
     // Extract the result from the response
+    // Using the FlashData interface from router-core
     let flashData: { data?: any; error?: any } = {}
     
     if (response.ok) {

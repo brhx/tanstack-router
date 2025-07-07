@@ -10,19 +10,19 @@ export type RequestHandler<TRouter extends AnyRouter> = (
   cb: HandlerCallback<TRouter>,
 ) => Promise<Response>
 
-// Helper function to parse cookies from request headers
-function parseCookiesFromHeaders(headers: Headers): Record<string, string> {
+// Helper function to get cookie value from headers
+function getCookieFromHeaders(headers: Headers, name: string): string | undefined {
   const cookieHeader = headers.get('cookie')
-  if (!cookieHeader) return {}
+  if (!cookieHeader) return undefined
   
-  const cookies: Record<string, string> = {}
-  cookieHeader.split(';').forEach(cookie => {
-    const [name, value] = cookie.trim().split('=')
-    if (name && value) {
-      cookies[name] = decodeURIComponent(value)
+  const cookies = cookieHeader.split(';')
+  for (const cookie of cookies) {
+    const [cookieName, cookieValue] = cookie.trim().split('=')
+    if (cookieName === name && cookieValue) {
+      return decodeURIComponent(cookieValue)
     }
-  })
-  return cookies
+  }
+  return undefined
 }
 
 export function createRequestHandler<TRouter extends AnyRouter>({
@@ -44,12 +44,13 @@ export function createRequestHandler<TRouter extends AnyRouter>({
     const href = url.href.replace(url.origin, '')
     
     // Check for flash data in cookies
-    const cookies = parseCookiesFromHeaders(request.headers)
-    const flashData = cookies['__tsr_flash']
+    // Note: We can't use h3's getCookie here because we don't have access to the event
+    const flashData = getCookieFromHeaders(request.headers, '__tsr_flash')
     
     if (flashData) {
       try {
-        const parsedFlashData = tsrSerializer.parse(flashData) as Record<string, any>
+        // Parse flash data using the FlashData interface
+        const parsedFlashData = tsrSerializer.parse(flashData) as import('../router').FlashData
         router.serverSsr!.flashData = parsedFlashData
       } catch (e) {
         console.error('Failed to parse flash data:', e)
