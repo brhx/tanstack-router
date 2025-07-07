@@ -43,22 +43,16 @@ export function createRequestHandler<TRouter extends AnyRouter>({
 
     const href = url.href.replace(url.origin, '')
     
-    // Check for flash data in URL and cookies
-    const searchParams = new URLSearchParams(url.search)
-    const flashKey = searchParams.get('__tsr_flash')
+    // Check for flash data in cookies
+    const cookies = parseCookiesFromHeaders(request.headers)
+    const flashData = cookies['__tsr_flash']
     
-    if (flashKey) {
-      const cookies = parseCookiesFromHeaders(request.headers)
-      const flashCookieName = `__tsr_flash_${flashKey}`
-      const flashData = cookies[flashCookieName]
-      
-      if (flashData) {
-        try {
-          const parsedFlashData = tsrSerializer.parse(flashData)
-          router.serverSsr!.flashData[flashKey] = parsedFlashData
-        } catch (e) {
-          console.error('Failed to parse flash data:', e)
-        }
+    if (flashData) {
+      try {
+        const parsedFlashData = tsrSerializer.parse(flashData) as Record<string, any>
+        router.serverSsr!.flashData = parsedFlashData
+      } catch (e) {
+        console.error('Failed to parse flash data:', e)
       }
     }
 
@@ -78,7 +72,7 @@ export function createRequestHandler<TRouter extends AnyRouter>({
 
     const responseHeaders = getRequestHeaders({
       router,
-      flashKey,
+      hasFlashData: !!flashData,
     })
 
     return cb({
@@ -89,7 +83,7 @@ export function createRequestHandler<TRouter extends AnyRouter>({
   }
 }
 
-function getRequestHeaders(opts: { router: AnyRouter; flashKey?: string | null }): Headers {
+function getRequestHeaders(opts: { router: AnyRouter; hasFlashData?: boolean }): Headers {
   let headers = mergeHeaders(
     {
       'Content-Type': 'text/html; charset=UTF-8',
@@ -107,9 +101,8 @@ function getRequestHeaders(opts: { router: AnyRouter; flashKey?: string | null }
   }
   
   // Delete flash cookie if present
-  if (opts.flashKey) {
-    const cookieName = `__tsr_flash_${opts.flashKey}`
-    headers.append('Set-Cookie', `${cookieName}=; Max-Age=0; Path=/; HttpOnly`)
+  if (opts.hasFlashData) {
+    headers.append('Set-Cookie', `__tsr_flash=; Max-Age=0; Path=/; HttpOnly`)
   }
 
   return headers

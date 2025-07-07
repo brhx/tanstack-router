@@ -87,21 +87,11 @@ export function useServerFetcher<TServerFn extends AnyServerFunction>(
 
   // Check for flash data from non-JS form submission
   React.useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search)
-    const flashKey = searchParams.get('__tsr_flash')
-    
-    if (flashKey) {
-      // Remove the flash key from URL
-      searchParams.delete('__tsr_flash')
-      const newUrl = window.location.pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '')
-      window.history.replaceState(null, '', newUrl)
-      
-      // Get flash data from window object (it should be injected during SSR)
-      const flashData = (window as any).__TSR_FLASH_DATA__?.[flashKey]
-      if (flashData) {
-        setState({ data: flashData.data, error: flashData.error, state: 'idle' })
-        delete (window as any).__TSR_FLASH_DATA__?.[flashKey]
-      }
+    // Get flash data from window object (it should be injected during SSR)
+    const flashData = (window as any).__TSR_FLASH_DATA__
+    if (flashData) {
+      setState({ data: flashData.data, error: flashData.error, state: 'idle' })
+      delete (window as any).__TSR_FLASH_DATA__
     }
   }, [])
 

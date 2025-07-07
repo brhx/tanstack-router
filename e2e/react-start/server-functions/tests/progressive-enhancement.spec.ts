@@ -48,9 +48,6 @@ test.describe('Progressive Enhancement with useServerFetcher', () => {
     // Check the result is displayed
     const result = await page.textContent('[data-testid="result"]')
     expect(result).toContain('Hello, Jane Smith! You are 25 years old.')
-    
-    // Check that the flash query param was removed
-    expect(page.url()).not.toContain('__tsr_flash')
   })
 
   test('Form handles errors with JavaScript enabled', async ({ page }) => {
@@ -171,6 +168,57 @@ test.describe('Progressive Enhancement with useServerFetcher', () => {
     const url = new URL(page.url())
     expect(url.searchParams.get('existing')).toBe('param')
     expect(url.searchParams.get('another')).toBe('value')
-    expect(url.searchParams.has('__tsr_flash')).toBe(false)
+  })
+
+  test('Complex data serialization works with JavaScript enabled', async ({ page }) => {
+    await page.goto('/progressive-enhancement-serialization-test')
+    
+    // Submit the form
+    await page.click('[data-testid="submit-button"]')
+    
+    // Wait for result
+    await page.waitForSelector('[data-testid="result"]')
+    
+    // Check Date serialization
+    const date = await page.textContent('[data-testid="date"]')
+    expect(date).toBe('2024-01-15T10:30:00.000Z')
+    
+    // Check BigInt serialization
+    const bigint = await page.textContent('[data-testid="bigint"]')
+    expect(bigint).toBe('1000000')
+    
+    // Check nested Date
+    const nestedDate = await page.textContent('[data-testid="nested-date"]')
+    expect(nestedDate).toBe('2023-12-25T00:00:00.000Z')
+    
+    // Check array of dates
+    const arrayDates = await page.textContent('[data-testid="array-dates"]')
+    expect(arrayDates).toContain('2023-01-01T00:00:00.000Z')
+    expect(arrayDates).toContain('2023-06-15T12:00:00.000Z')
+  })
+
+  test('Complex data serialization works with JavaScript disabled', async ({ page, context }) => {
+    // Disable JavaScript
+    await context.route('**/*.js', (route) => route.abort())
+    
+    await page.goto('/progressive-enhancement-serialization-test')
+    
+    // Submit the form
+    await page.click('[data-testid="submit-button"]')
+    
+    // Wait for page reload
+    await page.waitForURL(/progressive-enhancement-serialization-test/)
+    
+    // Check Date serialization
+    const date = await page.textContent('[data-testid="date"]')
+    expect(date).toBe('2024-01-15T10:30:00.000Z')
+    
+    // Check BigInt serialization
+    const bigint = await page.textContent('[data-testid="bigint"]')
+    expect(bigint).toBe('1000000')
+    
+    // Check nested Date
+    const nestedDate = await page.textContent('[data-testid="nested-date"]')
+    expect(nestedDate).toBe('2023-12-25T00:00:00.000Z')
   })
 })

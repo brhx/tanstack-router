@@ -667,6 +667,7 @@ export interface ServerSrr {
   streamValue: (key: string, value: any) => void
   streamedKeys: Set<string>
   onMatchSettled: (opts: { router: AnyRouter; match: AnyRouteMatch }) => any
+  flashData: Record<string, any>
 }
 
 export type AnyRouterWithContext<TContext> = RouterCore<

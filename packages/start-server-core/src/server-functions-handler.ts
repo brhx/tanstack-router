@@ -1,7 +1,7 @@
 import { isNotFound, isRedirect } from '@tanstack/router-core'
 import invariant from 'tiny-invariant'
 import { startSerializer } from '@tanstack/start-client-core'
-import { getEvent, getResponseStatus, setCookie, getCookie, deleteCookie } from './h3'
+import { getEvent, getResponseStatus, setCookie } from './h3'
 import { VIRTUAL_MODULES } from './virtual-modules'
 import { loadVirtualModule } from './loadVirtualModule'
 
@@ -266,9 +266,6 @@ export const handleServerAction = async ({ request }: { request: Request }) => {
       return response
     }
 
-    // Generate a unique flash key
-    const flashKey = `flash_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    
     // Extract the result from the response
     let flashData: { data?: any; error?: any } = {}
     
@@ -290,22 +287,19 @@ export const handleServerAction = async ({ request }: { request: Request }) => {
       }
     }
     
-    // Store the result in a cookie
-    setCookie(`__tsr_flash_${flashKey}`, startSerializer.stringify(flashData), {
+    // Store the result in a single flash cookie
+    setCookie('__tsr_flash', startSerializer.stringify(flashData), {
       httpOnly: true,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60, // 60 seconds should be enough for redirect
     })
     
-    // Redirect back to the referer with the flash key
-    const refererUrl = new URL(referer)
-    refererUrl.searchParams.set('__tsr_flash', flashKey)
-    
+    // Redirect back to the referer
     return new Response(null, {
       status: 303, // See Other - proper status for POST redirect
       headers: {
-        'Location': refererUrl.toString(),
+        'Location': referer,
       },
     })
   }

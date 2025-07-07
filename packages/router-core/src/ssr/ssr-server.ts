@@ -116,7 +116,7 @@ export function dehydrateRouter(router: AnyRouter) {
   )
   
   // Inject flash data if present
-  if (Object.keys(router.serverSsr!.flashData).length > 0) {
+  if (router.serverSsr!.flashData && Object.keys(router.serverSsr!.flashData).length > 0) {
     router.serverSsr!.injectScript(
       () =>
         `window.__TSR_FLASH_DATA__ = ${jsesc(
