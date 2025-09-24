@@ -105,19 +105,11 @@ type ValidateSerializableTuple<
     ? T extends Array<unknown>
       ? [
           ApplyArrayValidation<THead, TSerializable, TKind>,
-          ...ValidateSerializableTuple<
-            TTail extends Array<unknown> ? TTail : TTail,
-            TSerializable,
-            TKind
-          >,
+          ...ValidateSerializableTuple<TTail, TSerializable, TKind>,
         ]
       : readonly [
           ApplyArrayValidation<THead, TSerializable, TKind>,
-          ...ValidateSerializableTuple<
-            TTail,
-            TSerializable,
-            TKind
-          >,
+          ...ValidateSerializableTuple<TTail, TSerializable, TKind>,
         ]
     : T
   : T
