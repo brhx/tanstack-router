@@ -43,10 +43,7 @@ type ValidatorData<TMiddlewares, TValidator> = ValidatorInput<
   TValidator
 >
 
-type ServerFnCallOptions<
-  TMiddlewares,
-  TValidator,
-> = Simplify<
+type ServerFnCallOptions<TMiddlewares, TValidator> = Simplify<
   FetcherBaseOptions &
     (undefined extends ValidatorData<TMiddlewares, TValidator>
       ? {
@@ -58,10 +55,7 @@ type ServerFnCallOptions<
 >
 
 type KeyPayload<TOptions> = Simplify<
-  Pick<
-    NonNullable<TOptions>,
-    Extract<OptionKey, keyof NonNullable<TOptions>>
-  >
+  Pick<NonNullable<TOptions>, Extract<OptionKey, keyof NonNullable<TOptions>>>
 >
 
 type StripServerOptions<T> = Omit<T, OptionKey | 'signal'>
@@ -72,7 +66,9 @@ export type ServerFnQueryFnData<
   TResponse,
   TServerFnResponseType extends ServerFnResponseType,
 > = Awaited<
-  ReturnType<Fetcher<TMiddlewares, TValidator, TResponse, TServerFnResponseType>>
+  ReturnType<
+    Fetcher<TMiddlewares, TValidator, TResponse, TServerFnResponseType>
+  >
 >
 
 export type ServerFnQueryKey<
@@ -115,7 +111,10 @@ type ServerFnQueryOptionsConstraint<
   TQueryKey extends QueryKey,
 > = Simplify<
   ServerFnCallOptions<TMiddlewares, TValidator> &
-    Omit<UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>, 'queryFn' | 'queryKey'>
+    Omit<
+      UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
+      'queryFn' | 'queryKey'
+    >
 >
 
 export type ServerFnQueryOptionsInput<
@@ -149,13 +148,10 @@ export type ServerFnQueryOptionsInput<
   TQueryKey
 >
 
-export type ServerFnQueryOptionsArg<
-  TMiddlewares,
-  TValidator,
-  TInput,
-> = undefined extends ValidatorData<TMiddlewares, TValidator>
-  ? TInput | undefined
-  : TInput
+export type ServerFnQueryOptionsArg<TMiddlewares, TValidator, TInput> =
+  undefined extends ValidatorData<TMiddlewares, TValidator>
+    ? TInput | undefined
+    : TInput
 
 export type ServerFnQueryOptionsResult<
   TOptions extends object,
@@ -229,11 +225,8 @@ export type ServerFnInfiniteQueryOptionsInput<
   TPageParam
 >
 
-export type ServerFnInfiniteQueryOptionsArg<
-  TMiddlewares,
-  TValidator,
-  TInput,
-> = ServerFnQueryOptionsArg<TMiddlewares, TValidator, TInput>
+export type ServerFnInfiniteQueryOptionsArg<TMiddlewares, TValidator, TInput> =
+  ServerFnQueryOptionsArg<TMiddlewares, TValidator, TInput>
 
 export type ServerFnInfiniteQueryOptionsResult<
   TOptions extends object,
@@ -249,10 +242,8 @@ export type ServerFnInfiniteQueryOptionsResult<
   }
 >
 
-export type ServerFnMutationVariables<
-  TMiddlewares,
-  TValidator,
-> = ServerFnCallOptions<TMiddlewares, TValidator>
+export type ServerFnMutationVariables<TMiddlewares, TValidator> =
+  ServerFnCallOptions<TMiddlewares, TValidator>
 
 type ServerFnMutationOptionsConstraint<
   TMethod extends Method,
@@ -267,7 +258,10 @@ type ServerFnMutationOptionsConstraint<
   TMutationKey extends MutationKey,
 > = Simplify<
   Partial<ServerFnCallOptions<TMiddlewares, TValidator>> &
-    Omit<UseMutationOptions<TData, TError, TVariables, TContext>, 'mutationFn' | 'mutationKey'>
+    Omit<
+      UseMutationOptions<TData, TError, TVariables, TContext>,
+      'mutationFn' | 'mutationKey'
+    >
 >
 
 export type ServerFnMutationOptionsInput<
@@ -344,16 +338,13 @@ function sanitizeForKey<T extends AnyRecord | undefined>(input: T) {
     }
   }
 
-  return Object.keys(result).length
-    ? (result as KeyPayload<T>)
-    : undefined
+  return Object.keys(result).length ? (result as KeyPayload<T>) : undefined
 }
 
-function makeQueryKey<TMethod extends Method, TOptions extends AnyRecord | undefined>(
-  method: TMethod,
-  functionId: string,
-  callOptions: TOptions,
-) {
+function makeQueryKey<
+  TMethod extends Method,
+  TOptions extends AnyRecord | undefined,
+>(method: TMethod, functionId: string, callOptions: TOptions) {
   return [
     SERVER_FN_KEY_PREFIX,
     method,
@@ -363,11 +354,10 @@ function makeQueryKey<TMethod extends Method, TOptions extends AnyRecord | undef
   ] as const
 }
 
-function makeMutationKey<TMethod extends Method, TOptions extends AnyRecord | undefined>(
-  method: TMethod,
-  functionId: string,
-  baseVariables: TOptions,
-) {
+function makeMutationKey<
+  TMethod extends Method,
+  TOptions extends AnyRecord | undefined,
+>(method: TMethod, functionId: string, baseVariables: TOptions) {
   return [
     SERVER_FN_KEY_PREFIX,
     method,
@@ -517,7 +507,13 @@ interface ServerFnReactQueryHelpers<
     >,
   >(
     input: ServerFnQueryOptionsArg<TMiddlewares, TValidator, TOptions>,
-  ): ServerFnQueryOptionsResult<TOptions, TQueryFnData, TError, TData, TQueryKey>
+  ): ServerFnQueryOptionsResult<
+    TOptions,
+    TQueryFnData,
+    TError,
+    TData,
+    TQueryKey
+  >
   infiniteQueryOptions<
     TQueryFnData = ServerFnQueryFnData<
       TMiddlewares,
@@ -661,26 +657,24 @@ declare module '@tanstack/start-client-core' {
     TValidator,
     TResponse,
     TServerFnResponseType extends ServerFnResponseType,
-  >
-    extends ServerFnReactQueryHelpers<
-        Method,
-        TMiddlewares,
-        TValidator,
-        TResponse,
-        TServerFnResponseType
-      > {}
+  > extends ServerFnReactQueryHelpers<
+      Method,
+      TMiddlewares,
+      TValidator,
+      TResponse,
+      TServerFnResponseType
+    > {}
 
   interface RequiredFetcher<
     TMiddlewares,
     TValidator,
     TResponse,
     TServerFnResponseType extends ServerFnResponseType,
-  >
-    extends ServerFnReactQueryHelpers<
-        Method,
-        TMiddlewares,
-        TValidator,
-        TResponse,
-        TServerFnResponseType
-      > {}
+  > extends ServerFnReactQueryHelpers<
+      Method,
+      TMiddlewares,
+      TValidator,
+      TResponse,
+      TServerFnResponseType
+    > {}
 }
