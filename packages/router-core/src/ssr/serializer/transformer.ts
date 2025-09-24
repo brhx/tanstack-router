@@ -100,44 +100,27 @@ type ValidateSerializableTuple<
   T extends ReadonlyArray<unknown>,
   TSerializable,
   TKind extends 'input' | 'result',
-> =
-  T extends Array<unknown>
-    ? ValidateSerializableTupleMutable<T, TSerializable, TKind>
-    : ValidateSerializableTupleReadonly<T, TSerializable, TKind>
-
-type ValidateSerializableTupleMutable<
-  T extends Array<unknown>,
-  TSerializable,
-  TKind extends 'input' | 'result',
-> = T extends []
-  ? []
-  : T extends [infer THead, ...infer TTail]
-    ? [
-        ApplyArrayValidation<THead, TSerializable, TKind>,
-        ...ValidateSerializableTupleMutable<
-          TTail extends Array<unknown> ? TTail : never,
-          TSerializable,
-          TKind
-        >,
-      ]
+> = T extends readonly [infer THead, ...infer TTail]
+  ? TTail extends ReadonlyArray<unknown>
+    ? T extends Array<unknown>
+      ? [
+          ApplyArrayValidation<THead, TSerializable, TKind>,
+          ...ValidateSerializableTuple<
+            TTail extends Array<unknown> ? TTail : TTail,
+            TSerializable,
+            TKind
+          >,
+        ]
+      : readonly [
+          ApplyArrayValidation<THead, TSerializable, TKind>,
+          ...ValidateSerializableTuple<
+            TTail,
+            TSerializable,
+            TKind
+          >,
+        ]
     : T
-
-type ValidateSerializableTupleReadonly<
-  T extends ReadonlyArray<unknown>,
-  TSerializable,
-  TKind extends 'input' | 'result',
-> = T extends readonly []
-  ? T
-  : T extends readonly [infer THead, ...infer TTail]
-    ? readonly [
-        ApplyArrayValidation<THead, TSerializable, TKind>,
-        ...ValidateSerializableTupleReadonly<
-          TTail extends ReadonlyArray<unknown> ? TTail : never,
-          TSerializable,
-          TKind
-        >,
-      ]
-    : T
+  : T
 
 export type RegisteredReadableStream =
   unknown extends SerializerExtensions['ReadableStream']
