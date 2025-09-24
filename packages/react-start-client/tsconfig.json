@@ -2,7 +2,11 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "module": "esnext"
+    "module": "esnext",
+    "paths": {
+      "@tanstack/start-client-core": ["../start-client-core/src/index.tsx"],
+      "@tanstack/start-client-core/*": ["../start-client-core/src/*"]
+    }
   },
   "include": [
     "src",

@@ -71,6 +71,12 @@
   },
   "peerDependencies": {
     "react": ">=18.0.0 || >=19.0.0",
-    "react-dom": ">=18.0.0 || >=19.0.0"
+    "react-dom": ">=18.0.0 || >=19.0.0",
+    "@tanstack/react-query": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/react-query": {
+      "optional": true
+    }
   }
 }

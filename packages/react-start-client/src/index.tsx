@@ -57,10 +57,6 @@ export {
   type FunctionMiddlewareServerNextFn,
   type FunctionServerResultWithContext,
 } from '@tanstack/start-client-core'
-export { Meta } from './Meta'
-export { Scripts } from './Scripts'
 export { StartClient } from './StartClient'
 export { renderRsc } from './renderRSC'
-export { useServerFn } from './useServerFn'
-export * from './serializer'
 export { createClientRpc } from '@tanstack/start-client-core/client'

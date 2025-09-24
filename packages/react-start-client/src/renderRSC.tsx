@@ -13,7 +13,7 @@ export function renderRsc(input: any): React.JSX.Element {
       status: 'pending',
       promise: Promise.resolve()
         .then(() => {
-          let element
+          let _element
 
           // We're in node
           // TODO: RSCs

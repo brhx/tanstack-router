@@ -1,7 +1,3 @@
-import {
-  infiniteQueryOptions as createInfiniteQueryOptions,
-  queryOptions as createQueryOptions,
-} from '@tanstack/react-query'
 import type {
   DefaultError,
   MutationKey,
@@ -10,6 +6,8 @@ import type {
   UseInfiniteQueryOptions,
   UseMutationOptions,
   UseQueryOptions,
+  infiniteQueryOptions as InfiniteQueryOptionsFn,
+  queryOptions as QueryOptionsFn,
 } from '@tanstack/react-query'
 import type { InfiniteData } from '@tanstack/query-core'
 import type {
@@ -21,6 +19,40 @@ import type {
   ServerFnResponseType,
 } from '@tanstack/start-client-core'
 
+type ReactQueryModule = {
+  queryOptions: typeof QueryOptionsFn
+  infiniteQueryOptions: typeof InfiniteQueryOptionsFn
+}
+
+const disableViaEnv =
+  typeof process !== 'undefined' &&
+  typeof process.env.TANSTACK_REACT_QUERY_DISABLE === 'string' &&
+  process.env.TANSTACK_REACT_QUERY_DISABLE !== '0' &&
+  process.env.TANSTACK_REACT_QUERY_DISABLE !== ''
+
+const disableViaGlobal = Boolean(
+  (globalThis as Record<string, unknown>)[
+    '__TANSTACK_REACT_QUERY_DISABLE'
+  ],
+)
+
+const disableReactQueryHelpers = disableViaEnv || disableViaGlobal
+
+let reactQueryModule: ReactQueryModule | null = null
+
+if (!disableReactQueryHelpers) {
+  const moduleId = '@tanstack/react-query'
+  try {
+    const module = await import(/* @vite-ignore */ moduleId)
+    reactQueryModule = {
+      queryOptions: module.queryOptions,
+      infiniteQueryOptions: module.infiniteQueryOptions,
+    }
+  } catch {
+    reactQueryModule = null
+  }
+}
+
 type AnyRecord = Record<string, unknown>
 type Simplify<T> = { [K in keyof T]: T[K] } & {}
 
@@ -29,7 +61,16 @@ type FetcherWithMeta = {
   functionId?: string
 }
 
-export const SERVER_FN_KEY_PREFIX = '__tsr_server_fn__' as const
+const isAbortSignal = (value: unknown): value is AbortSignal => {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+
+  const aborted = Reflect.get(value, 'aborted')
+  return typeof aborted === 'boolean'
+}
+
+export const SERVER_FN_KEY_PREFIX = '__tsr_server_fn__'
 const SERVER_OPTION_KEYS = ['data', 'headers', 'type'] as const
 type OptionKey = (typeof SERVER_OPTION_KEYS)[number]
 
@@ -100,11 +141,8 @@ export type ServerFnMutationKey<
 >
 
 type ServerFnQueryOptionsConstraint<
-  TMethod extends Method,
   TMiddlewares,
   TValidator,
-  TResponse,
-  TServerFnResponseType extends ServerFnResponseType,
   TQueryFnData,
   TError,
   TData,
@@ -137,11 +175,8 @@ export type ServerFnQueryOptionsInput<
     TValidator
   >,
 > = ServerFnQueryOptionsConstraint<
-  TMethod,
   TMiddlewares,
   TValidator,
-  TResponse,
-  TServerFnResponseType,
   TQueryFnData,
   TError,
   TData,
@@ -163,15 +198,12 @@ export type ServerFnQueryOptionsResult<
   StripServerOptions<TOptions> & {
     queryFn: QueryFunction<TQueryFnData, TQueryKey, any>
     queryKey: TQueryKey
-  }
+  } & Record<never, TError | TData>
 >
 
 type ServerFnInfiniteQueryOptionsConstraint<
-  TMethod extends Method,
   TMiddlewares,
   TValidator,
-  TResponse,
-  TServerFnResponseType extends ServerFnResponseType,
   TQueryFnData,
   TError,
   TData,
@@ -213,11 +245,8 @@ export type ServerFnInfiniteQueryOptionsInput<
   >,
   TPageParam = unknown,
 > = ServerFnInfiniteQueryOptionsConstraint<
-  TMethod,
   TMiddlewares,
   TValidator,
-  TResponse,
-  TServerFnResponseType,
   TQueryFnData,
   TError,
   TData,
@@ -239,23 +268,19 @@ export type ServerFnInfiniteQueryOptionsResult<
   StripServerOptions<TOptions> & {
     queryFn: QueryFunction<TQueryFnData, TQueryKey, TPageParam>
     queryKey: TQueryKey
-  }
+  } & Record<never, TError | TData>
 >
 
 export type ServerFnMutationVariables<TMiddlewares, TValidator> =
   ServerFnCallOptions<TMiddlewares, TValidator>
 
 type ServerFnMutationOptionsConstraint<
-  TMethod extends Method,
   TMiddlewares,
   TValidator,
-  TResponse,
-  TServerFnResponseType extends ServerFnResponseType,
   TData,
   TError,
   TVariables,
   TContext,
-  TMutationKey extends MutationKey,
 > = Simplify<
   Partial<ServerFnCallOptions<TMiddlewares, TValidator>> &
     Omit<
@@ -285,17 +310,14 @@ export type ServerFnMutationOptionsInput<
     TValidator
   >,
 > = ServerFnMutationOptionsConstraint<
-  TMethod,
   TMiddlewares,
   TValidator,
-  TResponse,
-  TServerFnResponseType,
   TData,
   TError,
   TVariables,
-  TContext,
-  TMutationKey
->
+  TContext
+> &
+  Record<never, TMutationKey>
 
 export type ServerFnMutationOptionsResult<
   TOptions extends object,
@@ -308,7 +330,7 @@ export type ServerFnMutationOptionsResult<
   StripServerOptions<TOptions> & {
     mutationFn: (variables?: TVariables) => Promise<TData>
     mutationKey: TMutationKey
-  }
+  } & Record<never, TError | TContext>
 >
 
 function pickCallOptions(input: AnyRecord | undefined) {
@@ -329,16 +351,18 @@ function pickCallOptions(input: AnyRecord | undefined) {
 function sanitizeForKey<T extends AnyRecord | undefined>(input: T) {
   if (!input) return undefined
 
-  const result: AnyRecord = {}
+  const result = {} as KeyPayload<T>
+  let hasValue = false
 
   for (const key of SERVER_OPTION_KEYS) {
     const value = input[key]
     if (value !== undefined) {
-      result[key] = value
+      result[key as keyof KeyPayload<T>] = value as KeyPayload<T>[keyof KeyPayload<T>]
+      hasValue = true
     }
   }
 
-  return Object.keys(result).length ? (result as KeyPayload<T>) : undefined
+  return hasValue ? result : undefined
 }
 
 function makeQueryKey<
@@ -368,12 +392,14 @@ function makeMutationKey<
 }
 
 function toQueryOptions(
+  reactQuery: ReactQueryModule,
   fetcher: FetcherWithMeta,
   method: Method,
   functionId: string,
   input: AnyRecord | undefined,
 ) {
-  const { signal, ...rest } = (input || {}) as AnyRecord
+  const inputRecord: AnyRecord = input ?? {}
+  const { signal, ...rest } = inputRecord
   const callOptions = pickCallOptions(rest)
   const queryKey = makeQueryKey(method, functionId, callOptions)
 
@@ -386,7 +412,7 @@ function toQueryOptions(
     return fetcher(payload)
   }
 
-  return createQueryOptions({
+  return reactQuery.queryOptions({
     ...rest,
     queryKey,
     queryFn,
@@ -394,12 +420,14 @@ function toQueryOptions(
 }
 
 function toInfiniteQueryOptions(
+  reactQuery: ReactQueryModule,
   fetcher: FetcherWithMeta,
   method: Method,
   functionId: string,
   input: AnyRecord | undefined,
 ) {
-  const { signal, ...rest } = (input || {}) as AnyRecord
+  const inputRecord: AnyRecord = input ?? {}
+  const { signal, ...rest } = inputRecord
   const callOptions = pickCallOptions(rest)
   const queryKey = makeQueryKey(method, functionId, callOptions)
 
@@ -428,11 +456,11 @@ function toInfiniteQueryOptions(
     return fetcher(payload)
   }
 
-  return createInfiniteQueryOptions({
+  return reactQuery.infiniteQueryOptions({
     ...rest,
     queryKey,
     queryFn,
-  } as any)
+  })
 }
 
 function toMutationOptions(
@@ -441,12 +469,19 @@ function toMutationOptions(
   functionId: string,
   input: AnyRecord | undefined,
 ) {
-  const { signal, ...rest } = (input || {}) as AnyRecord
+  const inputRecord: AnyRecord = input ?? {}
+  const { signal, ...rest } = inputRecord
   const baseVariables = pickCallOptions(rest)
   const mutationKey = makeMutationKey(method, functionId, baseVariables)
 
   const mutationFn = async (variables?: AnyRecord) => {
-    const variableSignal = variables?.signal as AbortSignal | undefined
+    const variableSignalCandidate =
+      variables && typeof variables === 'object'
+        ? Reflect.get(variables, 'signal')
+        : undefined
+    const variableSignal = isAbortSignal(variableSignalCandidate)
+      ? variableSignalCandidate
+      : undefined
     const payload = {
       ...baseVariables,
       ...(variables ? pickCallOptions(variables) : {}),
@@ -470,7 +505,7 @@ interface ServerFnReactQueryHelpers<
   TResponse,
   TServerFnResponseType extends ServerFnResponseType,
 > {
-  queryOptions<
+  queryOptions: <
     TQueryFnData = ServerFnQueryFnData<
       TMiddlewares,
       TValidator,
@@ -485,21 +520,15 @@ interface ServerFnReactQueryHelpers<
       TValidator
     >,
     TOptions extends ServerFnQueryOptionsConstraint<
-      TMethod,
       TMiddlewares,
       TValidator,
-      TResponse,
-      TServerFnResponseType,
       TQueryFnData,
       TError,
       TData,
       TQueryKey
     > = ServerFnQueryOptionsConstraint<
-      TMethod,
       TMiddlewares,
       TValidator,
-      TResponse,
-      TServerFnResponseType,
       TQueryFnData,
       TError,
       TData,
@@ -507,14 +536,14 @@ interface ServerFnReactQueryHelpers<
     >,
   >(
     input: ServerFnQueryOptionsArg<TMiddlewares, TValidator, TOptions>,
-  ): ServerFnQueryOptionsResult<
+  ) => ServerFnQueryOptionsResult<
     TOptions,
     TQueryFnData,
     TError,
     TData,
     TQueryKey
   >
-  infiniteQueryOptions<
+  infiniteQueryOptions: <
     TQueryFnData = ServerFnQueryFnData<
       TMiddlewares,
       TValidator,
@@ -530,22 +559,16 @@ interface ServerFnReactQueryHelpers<
     >,
     TPageParam = unknown,
     TOptions extends ServerFnInfiniteQueryOptionsConstraint<
-      TMethod,
       TMiddlewares,
       TValidator,
-      TResponse,
-      TServerFnResponseType,
       TQueryFnData,
       TError,
       TData,
       TQueryKey,
       TPageParam
     > = ServerFnInfiniteQueryOptionsConstraint<
-      TMethod,
       TMiddlewares,
       TValidator,
-      TResponse,
-      TServerFnResponseType,
       TQueryFnData,
       TError,
       TData,
@@ -554,7 +577,7 @@ interface ServerFnReactQueryHelpers<
     >,
   >(
     input: ServerFnInfiniteQueryOptionsArg<TMiddlewares, TValidator, TOptions>,
-  ): ServerFnInfiniteQueryOptionsResult<
+  ) => ServerFnInfiniteQueryOptionsResult<
     TOptions,
     TQueryFnData,
     TError,
@@ -562,7 +585,7 @@ interface ServerFnReactQueryHelpers<
     TQueryKey,
     TPageParam
   >
-  mutationOptions<
+  mutationOptions: <
     TData = ServerFnQueryFnData<
       TMiddlewares,
       TValidator,
@@ -578,31 +601,23 @@ interface ServerFnReactQueryHelpers<
       TValidator
     >,
     TOptions extends ServerFnMutationOptionsConstraint<
-      TMethod,
       TMiddlewares,
       TValidator,
-      TResponse,
-      TServerFnResponseType,
       TData,
       TError,
       TVariables,
-      TContext,
-      TMutationKey
+      TContext
     > = ServerFnMutationOptionsConstraint<
-      TMethod,
       TMiddlewares,
       TValidator,
-      TResponse,
-      TServerFnResponseType,
       TData,
       TError,
       TVariables,
-      TContext,
-      TMutationKey
+      TContext
     >,
   >(
     input?: TOptions,
-  ): ServerFnMutationOptionsResult<
+  ) => ServerFnMutationOptionsResult<
     TOptions,
     TData,
     TError,
@@ -628,16 +643,20 @@ export function attachReactQueryHelpers<
     TValidator
   >,
 ) {
-  if (!fetcher) return fetcher
+  if (!reactQueryModule) {
+    return fetcher
+  }
 
-  const method = options.method ?? 'GET'
+  const reactQuery = reactQueryModule
+
+  const method = options.method
   const functionId = fetcher.functionId ?? options.functionId
 
   const helpers = {
     queryOptions: (input?: AnyRecord) =>
-      toQueryOptions(fetcher, method, functionId, input),
+      toQueryOptions(reactQuery, fetcher, method, functionId, input),
     infiniteQueryOptions: (input?: AnyRecord) =>
-      toInfiniteQueryOptions(fetcher, method, functionId, input),
+      toInfiniteQueryOptions(reactQuery, fetcher, method, functionId, input),
     mutationOptions: (input?: AnyRecord) =>
       toMutationOptions(fetcher, method, functionId, input),
   } as unknown as ServerFnReactQueryHelpers<

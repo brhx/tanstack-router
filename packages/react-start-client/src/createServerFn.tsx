@@ -1,52 +1,64 @@
-import {
-  createServerFn as createServerFnCore,
-  type Method,
-  type ServerFnBuilder,
-  type ServerFnResponseType,
-  type ServerFnBaseOptions,
-} from '@tanstack/start-client-core'
+import { createServerFn as createServerFnCore } from '@tanstack/start-client-core'
 import { attachReactQueryHelpers } from './reactQueryHelpers'
+import type {
+  Method,
+  Register,
+  ServerFnBaseOptions,
+  ServerFnBuilder,
+} from '@tanstack/start-client-core'
 
 const ENHANCED_BUILDER = Symbol('serverFnReactQueryEnhanced')
 
-function enhanceBuilder(builder: any) {
-  if (!builder || builder[ENHANCED_BUILDER]) {
+function enhanceBuilder<TBuilder extends { [key: string]: unknown }>(
+  builder: TBuilder,
+): TBuilder {
+  if (!builder || (builder as any)[ENHANCED_BUILDER]) {
     return builder
   }
 
-  const originalMiddleware = builder.middleware?.bind(builder)
+  const builderAny = builder as any
+
+  const originalMiddleware = builderAny.middleware?.bind(builderAny)
   if (originalMiddleware) {
-    builder.middleware = ((middleware: any) => {
+    builderAny.middleware = (middleware: unknown) => {
       const next = originalMiddleware(middleware)
       return enhanceBuilder(next)
-    }) as typeof builder.middleware
+    }
   }
 
-  const originalInputValidator = builder.inputValidator?.bind(builder)
+  const originalInputValidator = builderAny.inputValidator?.bind(builderAny)
   if (originalInputValidator) {
-    builder.inputValidator = ((validator: any) => {
+    builderAny.inputValidator = (validator: unknown) => {
       const next = originalInputValidator(validator)
       return enhanceBuilder(next)
-    }) as typeof builder.inputValidator
+    }
   }
 
-  const originalType = builder.type?.bind(builder)
+  const originalValidator = builderAny.validator?.bind(builderAny)
+  if (originalValidator) {
+    builderAny.validator = (validator: unknown) => {
+      const next = originalValidator(validator)
+      return enhanceBuilder(next)
+    }
+  }
+
+  const originalType = builderAny.type?.bind(builderAny)
   if (originalType) {
-    builder.type = ((typer: any) => {
+    builderAny.type = (typer: unknown) => {
       const next = originalType(typer)
       return enhanceBuilder(next)
-    }) as typeof builder.type
+    }
   }
 
-  const originalHandler = builder.handler?.bind(builder)
+  const originalHandler = builderAny.handler?.bind(builderAny)
   if (originalHandler) {
-    builder.handler = ((...args: Array<any>) => {
+    builderAny.handler = (...args: Array<unknown>) => {
       const fetcher = originalHandler(...args)
-      return attachReactQueryHelpers(fetcher as any, builder.options as any)
-    }) as typeof builder.handler
+      return attachReactQueryHelpers(fetcher, builderAny.options)
+    }
   }
 
-  Object.defineProperty(builder, ENHANCED_BUILDER, {
+  Object.defineProperty(builderAny, ENHANCED_BUILDER, {
     value: true,
     enumerable: false,
     configurable: false,
@@ -57,19 +69,16 @@ function enhanceBuilder(builder: any) {
 
 export function createServerFn<
   TMethod extends Method,
-  TServerFnResponseType extends ServerFnResponseType = 'data',
   TResponse = unknown,
   TMiddlewares = undefined,
   TValidator = undefined,
 >(
   options?: {
     method?: TMethod
-    response?: TServerFnResponseType
-    type?: ServerFnBaseOptions<TMethod, TServerFnResponseType>['type']
   },
   __opts?: ServerFnBaseOptions<
+    Register,
     TMethod,
-    TServerFnResponseType,
     TResponse,
     TMiddlewares,
     TValidator
@@ -77,14 +86,10 @@ export function createServerFn<
 ) {
   const builder = createServerFnCore<
     TMethod,
-    TServerFnResponseType,
     TResponse,
     TMiddlewares,
     TValidator
   >(options as any, __opts as any)
 
-  return enhanceBuilder(builder) as ServerFnBuilder<
-    TMethod,
-    TServerFnResponseType
-  >
+  return enhanceBuilder(builder) as ServerFnBuilder<Register, TMethod>
 }
