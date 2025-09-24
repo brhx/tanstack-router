@@ -22,12 +22,12 @@ function enhanceBuilder(builder: any) {
     }) as typeof builder.middleware
   }
 
-  const originalValidator = builder.validator?.bind(builder)
-  if (originalValidator) {
-    builder.validator = ((validator: any) => {
-      const next = originalValidator(validator)
+  const originalInputValidator = builder.inputValidator?.bind(builder)
+  if (originalInputValidator) {
+    builder.inputValidator = ((validator: any) => {
+      const next = originalInputValidator(validator)
       return enhanceBuilder(next)
-    }) as typeof builder.validator
+    }) as typeof builder.inputValidator
   }
 
   const originalType = builder.type?.bind(builder)
