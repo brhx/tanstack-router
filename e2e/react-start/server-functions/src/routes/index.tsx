@@ -73,6 +73,11 @@ function Home() {
           <Link to="/raw-response">server function returns raw response</Link>
         </li>
         <li>
+          <Link to="/use-action-state">
+            React useActionState with a 'use server' action
+          </Link>
+        </li>
+        <li>
           <Link to="/formdata-redirect" search={{ mode: 'js' }}>
             server function redirects when FormData is submitted (via JS)
           </Link>

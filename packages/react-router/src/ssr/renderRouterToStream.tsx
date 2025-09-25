@@ -14,16 +14,22 @@ export const renderRouterToStream = async ({
   router,
   responseHeaders,
   children,
+  formState,
 }: {
   request: Request
   router: AnyRouter
   responseHeaders: Headers
   children: ReactNode
+  formState?: any
 }) => {
   if (typeof ReactDOMServer.renderToReadableStream === 'function') {
-    const stream = await ReactDOMServer.renderToReadableStream(children, {
-      signal: request.signal,
-    })
+    const stream = await ReactDOMServer.renderToReadableStream(
+      children,
+      {
+        signal: request.signal,
+        ...(formState !== undefined ? { formState } : {}),
+      } as any,
+    )
 
     if (isbot(request.headers.get('User-Agent'))) {
       await stream.allReady

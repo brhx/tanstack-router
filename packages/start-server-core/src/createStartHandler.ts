@@ -189,21 +189,19 @@ export function createStartHandler<TRegister = Register>(
             getRouter,
             startOptions,
             contextAfterGlobalMiddlewares: context,
+            href,
           },
           async () => {
             try {
-              // First, let's attempt to handle server functions
-              if (href.startsWith(serverFnBase)) {
-                return await handleServerAction({
-                  request,
-                  context: requestOpts?.context,
-                })
-              }
-
-              const executeRouter = async ({
+              const executeRouter: ({
                 serverContext,
+                formState,
               }: {
                 serverContext: any
+                formState?: any
+              }) => Promise<Response> = async ({
+                serverContext,
+                formState,
               }) => {
                 const requestAcceptHeader =
                   request.headers.get('Accept') || '*/*'
@@ -255,9 +253,22 @@ export function createStartHandler<TRegister = Register>(
                   request,
                   router,
                   responseHeaders,
+                  formState,
                 })
 
                 return response
+              }
+
+              const serverActionResponse = await handleServerAction({
+                request,
+                context: requestOpts?.context,
+                href,
+                serverFnBase,
+                executeRouter,
+              })
+
+              if (serverActionResponse) {
+                return serverActionResponse
               }
 
               const response = await handleServerRoutes({
@@ -359,19 +370,15 @@ export function createStartHandler<TRegister = Register>(
   return requestHandler(startRequestResolver)
 }
 
-async function handleServerRoutes({
-  getRouter,
-  request,
-  executeRouter,
-}: {
+async function handleServerRoutes(opts: {
   getRouter: () => Awaitable<AnyRouter>
   request: Request
-  executeRouter: ({
-    serverContext,
-  }: {
+  executeRouter: (args: {
     serverContext: any
+    formState?: any
   }) => Promise<Response>
-}) {
+}): Promise<Response> {
+  const { getRouter, request, executeRouter } = opts
   const router = await getRouter()
   let url = new URL(request.url)
   url = executeRewriteInput(router.rewrite, url)

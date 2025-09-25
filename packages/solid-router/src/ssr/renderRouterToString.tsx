@@ -6,10 +6,12 @@ export const renderRouterToString = async ({
   router,
   responseHeaders,
   children,
+  formState: _formState,
 }: {
   router: AnyRouter
   responseHeaders: Headers
   children: () => JSXElement
+  formState?: any
 }) => {
   try {
     let html = Solid.renderToString(children)

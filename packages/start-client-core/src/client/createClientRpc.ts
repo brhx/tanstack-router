@@ -1,5 +1,6 @@
 import { TSS_SERVER_FUNCTION } from '../constants'
 import { serverFnFetcher } from './serverFnFetcher'
+import { createServerReference } from '../serverReference'
 
 // make sure this get's hoisted
 // eslint-disable-next-line no-var
@@ -16,13 +17,25 @@ export function createClientRpc(functionId: string) {
   }
   const url = baseUrl + functionId
 
-  const clientFn = (...args: Array<any>) => {
-    return serverFnFetcher(url, args, fetch)
+  const callServer = (args: Array<any>) => serverFnFetcher(url, args, fetch)
+
+  const getActionHref = () => {
+    try {
+      const location = window.location
+      return location.pathname + location.search + location.hash
+    } catch {
+      return undefined
+    }
   }
 
-  return Object.assign(clientFn, {
-    url,
+  return createServerReference({
     functionId,
-    [TSS_SERVER_FUNCTION]: true,
+    callServer,
+    getActionHref,
+    extraProperties: {
+      url,
+      functionId,
+      [TSS_SERVER_FUNCTION]: true,
+    },
   })
 }

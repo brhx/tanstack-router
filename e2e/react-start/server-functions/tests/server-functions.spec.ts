@@ -312,6 +312,63 @@ test('raw response', async ({ page }) => {
 
   await expect(page.getByTestId('response')).toContainText(expectedValue)
 })
+
+test.describe('React useActionState + "use server" integration', () => {
+  test('client-enhanced submissions stay on the same route', async ({ page }) => {
+    await page.goto('/use-action-state')
+
+    await page.waitForLoadState('networkidle')
+
+    const formActionHref =
+      (await page
+        .getByTestId('use-action-state-form')
+        .getAttribute('action')) || ''
+    expect(formActionHref).toContain('/use-action-state')
+
+    await expect(
+      page.getByTestId('use-action-state-last-name'),
+    ).toHaveText('n/a')
+
+    await page.getByTestId('use-action-state-input').fill('Grace')
+    await page.getByTestId('use-action-state-submit').click()
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.getByTestId('use-action-state-last-name')).toHaveText(
+      'Grace',
+    )
+    await expect(
+      page.getByTestId('use-action-state-submissions'),
+    ).toHaveText('1')
+    expect(new URL(page.url()).pathname).toBe('/use-action-state')
+  })
+
+  test.describe('without JavaScript', () => {
+    test.use({ javaScriptEnabled: false })
+
+    test('progressive enhancement posts back to the page', async ({ page }) => {
+      await page.goto('/use-action-state')
+
+      const formLocator = page.getByTestId('use-action-state-form')
+      const actionHref = (await formLocator.getAttribute('action')) || ''
+      expect(actionHref).toContain('/use-action-state')
+
+      await page.getByTestId('use-action-state-input').fill('Mina')
+      const navigation = page.waitForNavigation()
+      await page.getByTestId('use-action-state-submit').click()
+      await navigation
+
+      const currentPathname = new URL(page.url()).pathname
+      expect(currentPathname).toBe('/use-action-state')
+
+      await expect(page.getByTestId('use-action-state-last-name')).toHaveText(
+        'Mina',
+      )
+      await expect(
+        page.getByTestId('use-action-state-submissions'),
+      ).toHaveText('1')
+    })
+  })
+})
 ;[{ mode: 'js' }, { mode: 'no-js' }].forEach(({ mode }) => {
   test(`Server function can redirect when sending formdata: mode = ${mode}`, async ({
     page,

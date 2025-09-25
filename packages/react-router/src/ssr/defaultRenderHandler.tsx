@@ -3,10 +3,11 @@ import { renderRouterToString } from './renderRouterToString'
 import { RouterServer } from './RouterServer'
 
 export const defaultRenderHandler = defineHandlerCallback(
-  ({ router, responseHeaders }) =>
+  ({ router, responseHeaders, formState }) =>
     renderRouterToString({
       router,
       responseHeaders,
+      formState,
       children: <RouterServer router={router} />,
     }),
 )

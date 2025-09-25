@@ -1,0 +1,2 @@
+export const TSR_ACTION_ID_FIELD = '$TSR_ACTION_ID'
+export const TSR_BOUND_ARGS_FIELD = '$TSR_BOUND_ARGS'

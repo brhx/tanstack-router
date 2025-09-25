@@ -85,3 +85,9 @@ export type { Register } from '@tanstack/router-core'
 export { getRouterInstance } from './getRouterInstance'
 export { getDefaultSerovalPlugins } from './getDefaultSerovalPlugins'
 export { getGlobalStartContext } from './getGlobalStartContext'
+export { createServerReference } from './serverReference'
+export {
+  TSR_ACTION_ID_FIELD,
+  TSR_BOUND_ARGS_FIELD,
+} from './serverFunctionFormFields'
+export type { ServerReferenceFn } from './serverReference'

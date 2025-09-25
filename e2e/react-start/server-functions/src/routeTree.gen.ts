@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UseActionStateRouteImport } from './routes/use-action-state'
 import { Route as SubmitPostFormdataRouteImport } from './routes/submit-post-formdata'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as SerializeFormDataRouteImport } from './routes/serialize-form-data'
@@ -31,6 +32,11 @@ import { Route as MiddlewareClientMiddlewareRouterRouteImport } from './routes/m
 import { Route as CookiesSetRouteImport } from './routes/cookies/set'
 import { Route as FormdataRedirectTargetNameRouteImport } from './routes/formdata-redirect/target.$name'
 
+const UseActionStateRoute = UseActionStateRouteImport.update({
+  id: '/use-action-state',
+  path: '/use-action-state',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SubmitPostFormdataRoute = SubmitPostFormdataRouteImport.update({
   id: '/submit-post-formdata',
   path: '/submit-post-formdata',
@@ -153,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/serialize-form-data': typeof SerializeFormDataRoute
   '/status': typeof StatusRoute
   '/submit-post-formdata': typeof SubmitPostFormdataRoute
+  '/use-action-state': typeof UseActionStateRoute
   '/cookies/set': typeof CookiesSetRoute
   '/middleware/client-middleware-router': typeof MiddlewareClientMiddlewareRouterRoute
   '/middleware/send-serverFn': typeof MiddlewareSendServerFnRoute
@@ -176,6 +183,7 @@ export interface FileRoutesByTo {
   '/serialize-form-data': typeof SerializeFormDataRoute
   '/status': typeof StatusRoute
   '/submit-post-formdata': typeof SubmitPostFormdataRoute
+  '/use-action-state': typeof UseActionStateRoute
   '/cookies/set': typeof CookiesSetRoute
   '/middleware/client-middleware-router': typeof MiddlewareClientMiddlewareRouterRoute
   '/middleware/send-serverFn': typeof MiddlewareSendServerFnRoute
@@ -200,6 +208,7 @@ export interface FileRoutesById {
   '/serialize-form-data': typeof SerializeFormDataRoute
   '/status': typeof StatusRoute
   '/submit-post-formdata': typeof SubmitPostFormdataRoute
+  '/use-action-state': typeof UseActionStateRoute
   '/cookies/set': typeof CookiesSetRoute
   '/middleware/client-middleware-router': typeof MiddlewareClientMiddlewareRouterRoute
   '/middleware/send-serverFn': typeof MiddlewareSendServerFnRoute
@@ -225,6 +234,7 @@ export interface FileRouteTypes {
     | '/serialize-form-data'
     | '/status'
     | '/submit-post-formdata'
+    | '/use-action-state'
     | '/cookies/set'
     | '/middleware/client-middleware-router'
     | '/middleware/send-serverFn'
@@ -248,6 +258,7 @@ export interface FileRouteTypes {
     | '/serialize-form-data'
     | '/status'
     | '/submit-post-formdata'
+    | '/use-action-state'
     | '/cookies/set'
     | '/middleware/client-middleware-router'
     | '/middleware/send-serverFn'
@@ -271,6 +282,7 @@ export interface FileRouteTypes {
     | '/serialize-form-data'
     | '/status'
     | '/submit-post-formdata'
+    | '/use-action-state'
     | '/cookies/set'
     | '/middleware/client-middleware-router'
     | '/middleware/send-serverFn'
@@ -295,6 +307,7 @@ export interface RootRouteChildren {
   SerializeFormDataRoute: typeof SerializeFormDataRoute
   StatusRoute: typeof StatusRoute
   SubmitPostFormdataRoute: typeof SubmitPostFormdataRoute
+  UseActionStateRoute: typeof UseActionStateRoute
   CookiesSetRoute: typeof CookiesSetRoute
   MiddlewareClientMiddlewareRouterRoute: typeof MiddlewareClientMiddlewareRouterRoute
   MiddlewareSendServerFnRoute: typeof MiddlewareSendServerFnRoute
@@ -307,6 +320,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/use-action-state': {
+      id: '/use-action-state'
+      path: '/use-action-state'
+      fullPath: '/use-action-state'
+      preLoaderRoute: typeof UseActionStateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/submit-post-formdata': {
       id: '/submit-post-formdata'
       path: '/submit-post-formdata'
@@ -471,6 +491,7 @@ const rootRouteChildren: RootRouteChildren = {
   SerializeFormDataRoute: SerializeFormDataRoute,
   StatusRoute: StatusRoute,
   SubmitPostFormdataRoute: SubmitPostFormdataRoute,
+  UseActionStateRoute: UseActionStateRoute,
   CookiesSetRoute: CookiesSetRoute,
   MiddlewareClientMiddlewareRouterRoute: MiddlewareClientMiddlewareRouterRoute,
   MiddlewareSendServerFnRoute: MiddlewareSendServerFnRoute,

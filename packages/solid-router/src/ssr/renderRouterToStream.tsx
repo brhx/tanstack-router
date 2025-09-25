@@ -10,11 +10,13 @@ export const renderRouterToStream = async ({
   router,
   responseHeaders,
   children,
+  formState: _formState,
 }: {
   request: Request
   router: AnyRouter
   responseHeaders: Headers
   children: () => JSXElement
+  formState?: any
 }) => {
   const { writable, readable } = new TransformStream()
 

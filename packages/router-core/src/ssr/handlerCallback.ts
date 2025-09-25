@@ -5,6 +5,7 @@ export interface HandlerCallback<TRouter extends AnyRouter> {
     request: Request
     router: TRouter
     responseHeaders: Headers
+    formState?: any
   }): Response | Promise<Response>
 }
 

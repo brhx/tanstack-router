@@ -3,11 +3,12 @@ import { RouterServer } from './RouterServer'
 import { renderRouterToStream } from './renderRouterToStream'
 
 export const defaultStreamHandler = defineHandlerCallback(
-  ({ request, router, responseHeaders }) =>
+  ({ request, router, responseHeaders, formState }) =>
     renderRouterToStream({
       request,
       router,
       responseHeaders,
+      formState,
       children: () => <RouterServer router={router} />,
     }),
 )

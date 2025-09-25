@@ -8,6 +8,8 @@ export interface StartStorageContext {
   startOptions: /* AnyStartInstanceOptions*/ any
 
   contextAfterGlobalMiddlewares: any
+
+  href: string
 }
 
 const startStorage = new AsyncLocalStorage<StartStorageContext>()
