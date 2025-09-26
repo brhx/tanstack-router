@@ -226,11 +226,13 @@ type ResolveArrayShape<
   T extends ReadonlyArray<unknown>,
   TSerializable,
   TMode extends 'input' | 'result',
-> = number extends T['length']
-  ? T extends Array<infer U>
-    ? Array<ArrayModeResult<TMode, U, TSerializable>>
-    : ReadonlyArray<ArrayModeResult<TMode, T[number], TSerializable>>
-  : ResolveTupleShape<T, TSerializable, TMode>
+> = T extends readonly [unknown, ...infer _]
+  ? ResolveTupleShape<T, TSerializable, TMode>
+  : number extends T['length']
+    ? T extends Array<infer U>
+      ? Array<ArrayModeResult<TMode, U, TSerializable>>
+      : ReadonlyArray<ArrayModeResult<TMode, T[number], TSerializable>>
+    : T
 
 type ResolveTupleShape<
   T extends ReadonlyArray<unknown>,
@@ -239,9 +241,17 @@ type ResolveTupleShape<
 > = T extends readonly [infer THead, ...infer TTail]
   ? readonly [
       ArrayModeResult<TMode, THead, TSerializable>,
-      ...ResolveTupleShape<Readonly<TTail>, TSerializable, TMode>,
+      ...ResolveTupleShapeTail<TTail, TSerializable, TMode>,
     ]
   : T
+
+type ResolveTupleShapeTail<
+  T,
+  TSerializable,
+  TMode extends 'input' | 'result',
+> = T extends ReadonlyArray<unknown>
+  ? ResolveTupleShape<T, TSerializable, TMode>
+  : []
 
 type ArrayModeResult<
   TMode extends 'input' | 'result',

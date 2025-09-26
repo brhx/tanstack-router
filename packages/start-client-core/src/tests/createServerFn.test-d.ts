@@ -313,6 +313,15 @@ test('createServerFn returns undefined', () => {
   expectTypeOf(fn()).toEqualTypeOf<Promise<{ nothing: undefined }>>()
 })
 
+test('createServerFn preserves non-empty array results', () => {
+  const fn = createServerFn().handler(
+    () => ['a', 'b'] as [string, ...Array<string>],
+  )
+  expectTypeOf(fn()).toEqualTypeOf<
+    Promise<readonly [string, ...Array<string>]>
+  >()
+})
+
 test('createServerFn cannot return function', () => {
   expectTypeOf(createServerFn().handler<{ func: () => 'func' }>)
     .parameter(0)
