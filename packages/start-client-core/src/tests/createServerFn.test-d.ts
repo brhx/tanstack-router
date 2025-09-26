@@ -322,6 +322,12 @@ test('createServerFn preserves non-empty array results', () => {
   >()
 })
 
+test('createServerFn preserves plain array results', () => {
+  const fn = createServerFn().handler(() => ['a', 'b'])
+
+  expectTypeOf(fn()).toEqualTypeOf<Promise<Array<string>>>()
+})
+
 test('createServerFn cannot return function', () => {
   expectTypeOf(createServerFn().handler<{ func: () => 'func' }>)
     .parameter(0)
