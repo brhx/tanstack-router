@@ -3,7 +3,6 @@ import { describe, expectTypeOf, it } from 'vitest'
 import type {
   Serializable,
   ValidateSerializable,
-  ValidateSerializableResult,
 } from '../src/ssr/serializer/transformer'
 
 describe('ValidateSerializable array handling', () => {
@@ -55,7 +54,7 @@ describe('ValidateSerializable array handling', () => {
   it('should preserve recursive payload without infinite expansion', () => {
     type Result = Array<Result> | { [key: string]: Result }
     expectTypeOf<
-      ValidateSerializableResult<Result, Serializable>
+      ValidateSerializable<Result, Serializable>
     >().branded.toEqualTypeOf<Result>()
   })
 
@@ -65,7 +64,7 @@ describe('ValidateSerializable array handling', () => {
       { [key: string]: ResultTuple },
     ]
     expectTypeOf<
-      ValidateSerializableResult<ResultTuple, Serializable>
+      ValidateSerializable<ResultTuple, Serializable>
     >().branded.toEqualTypeOf<ResultTuple>()
   })
 
@@ -74,7 +73,7 @@ describe('ValidateSerializable array handling', () => {
       ResultReadonlyArray | { [key: string]: ResultReadonlyArray }
     >
     expectTypeOf<
-      ValidateSerializableResult<ResultReadonlyArray, Serializable>
+      ValidateSerializable<ResultReadonlyArray, Serializable>
     >().branded.toEqualTypeOf<ResultReadonlyArray>()
   })
 })
